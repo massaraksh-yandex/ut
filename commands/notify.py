@@ -1,5 +1,6 @@
 from platform.commands.endpoint import Endpoint
 from platform.statement.create import create
+from platform.statement.rule import Rule
 from platform.utils.utils import register_commands
 from platform.params.params import Params
 import urllib.request
@@ -15,13 +16,15 @@ class Notify(Endpoint):
         return '{path} - посылает сообщение в тг от имени бота'
 
     def _rules(self):
-        return create('Аргументом передаётся сообщение').single_option_command(self.notify)
+        return create('Аргументом передаётся сообщение').extended()\
+            .statement('Любое количество аргументов', result=self._notify, rule=Rule())\
+            .product()
 
-    def notify(self, p: Params):
+    def _notify(self, p: Params):
         key = '249099545:AAH5OB-N0nch1nV65Td3GWwaCzFZLgLKbXM'
         args = {
             'chat_id': '103645045',
-            'text': '*{host}*: {msg}'.format(host=socket.gethostname(), msg=p.targets[0].value),
+            'text': '*{host}*: {msg}'.format(host=socket.gethostname(), msg=' '.join(p.argv)),
             'parse_mode': 'Markdown'
         }
 
